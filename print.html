@@ -901,13 +901,15 @@ function scalePreview(containerW, containerH) {
   const pad     = 8;
   const scale   = Math.min((containerW - pad * 2) / A4_W, (containerH - pad * 2) / A4_H);
   const offsetX = Math.max(0, (containerW - A4_W * scale) / 2);
+  const offsetY = Math.max(0, (containerH - A4_H * scale) / 2);
   wrap.style.transformOrigin = 'top left';
-  wrap.style.transform = `translateX(${offsetX}px) scale(${scale})`;
+  wrap.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
   wrap.style.opacity   = '1';
   document.documentElement.style.width    = containerW + 'px';
+  document.documentElement.style.height   = containerH + 'px';
   document.documentElement.style.overflow = 'hidden';
   document.body.style.width    = containerW + 'px';
-  document.body.style.height   = Math.ceil(A4_H * scale + pad) + 'px';
+  document.body.style.height   = containerH + 'px';
   document.body.style.overflow = 'hidden';
 }
 
