@@ -763,7 +763,7 @@ function render(injectedState) {
     }
     const nameGroupRow = smcs.length > 0 ? `
       <tr data-section="machine-label">
-        <th class="h-label"></th>
+        <th class="h-label" rowspan="2"></th>
         ${nameGroupCells()}
       </tr>` : '';
 
@@ -774,7 +774,7 @@ function render(injectedState) {
         <thead>
           ${nameGroupRow}
           <tr data-section="machine-label">
-            <th class="h-label"></th>
+            ${nameGroupRow ? '' : '<th class="h-label"></th>'}
             ${smcs.map(m => thMC(m)).join('')}
           </tr>
         </thead>
