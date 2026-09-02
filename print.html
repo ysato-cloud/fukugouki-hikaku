@@ -430,6 +430,8 @@ function applyPrintCSS(mcCount, numSections) {
   const titleFont = 15;                                                   /* 表題（大きめ固定） */
   const pad    = n <= 1 ? 32 : n <= 2 ? 24 : n <= 3 ? 16 : 8;  /* プレビュー用 px */
   const padMm  = n <= 1 ? 8  : n <= 2 ? 6  : n <= 3 ? 4  : 2;  /* 印刷用 mm */
+  const extraLeftMm = 12;                 /* 左とじ・ファイリング用の追加余白 mm */
+  const extraLeftPx = Math.round(extraLeftMm / 297 * A4_W);  /* プレビュー換算 px */
   const imgMaxW = n <= 2 ? 160 : n <= 3 ? 130 : 100;
   const imgMaxH = Math.round(imgMaxW * 0.72);
 
@@ -437,7 +439,7 @@ function applyPrintCSS(mcCount, numSections) {
     ${prefix}.paper-wrap {
       width: ${A4_W}px !important; height: ${A4_H}px !important;
       max-width: none !important; margin: 0 !important;
-      padding: ${pad}px !important; box-sizing: border-box !important;
+      padding: ${pad}px ${pad}px ${pad}px ${pad + extraLeftPx}px !important; box-sizing: border-box !important;
       overflow: hidden !important;
       display: flex !important; flex-direction: column !important;
       align-items: center !important;
@@ -498,7 +500,7 @@ function applyPrintCSS(mcCount, numSections) {
       .screen-bar { display: none !important; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       ${layoutRules('')}
-      .paper-wrap { width: 297mm !important; height: ${numSections > 1 ? 'auto' : '210mm'} !important; padding: ${padMm}mm !important; transform: none !important; opacity: 1 !important; overflow: ${numSections > 1 ? 'visible' : 'hidden'} !important; }
+      .paper-wrap { width: 297mm !important; height: ${numSections > 1 ? 'auto' : '210mm'} !important; padding: ${padMm}mm ${padMm}mm ${padMm}mm ${padMm + extraLeftMm}mm !important; transform: none !important; opacity: 1 !important; overflow: ${numSections > 1 ? 'visible' : 'hidden'} !important; }
       .doc-header { padding-left: 0 !important; padding-right: 0 !important; }
       .doc-body   { padding-left: 0 !important; padding-right: 0 !important; }
       ${numSections > 1 ? `
