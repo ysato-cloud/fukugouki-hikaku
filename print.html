@@ -738,15 +738,6 @@ function render(injectedState) {
       </tr>` : ''}
     ` : '';
 
-    const numCurrCols = smcs.filter(m => m.role === 'current').length;
-    const numPropCols = smcs.filter(m => m.role === 'proposal').length;
-    const groupHeaderRow = (numCurrCols > 0 && numPropCols > 0) ? `
-      <tr data-section="machine-label">
-        <th class="h-label"></th>
-        <th class="h-mc h-group mc-current" colspan="${numCurrCols}">現状</th>
-        <th class="h-mc h-group mc-proposal-0" colspan="${numPropCols}">ご提案</th>
-      </tr>` : '';
-
     const hasPatternGroups = smcs.some(m => m.role === 'proposal' && m.group);
     function patternGroupCells() {
       const cells = [];
@@ -776,7 +767,6 @@ function render(injectedState) {
       <table class="compare">
         ${colGroup}
         <thead>
-          ${groupHeaderRow}
           ${patternGroupRow}
           <tr data-section="machine-label">
             <th class="h-label"></th>
@@ -810,18 +800,7 @@ function render(injectedState) {
     ${mcs.map(() => `<col style="width:${(78/mcs.length).toFixed(2)}%">`).join('')}
   </colgroup>`;
 
-  const currentTotalCols  = rhCurrFeeGrps.reduce((sum, g) => sum + g.length, 0);
-  const proposalTotalCols = rhPropFeeGrps.reduce((sum, g) => sum + g.length, 0);
-
-  const rhHeaders = (currentTotalCols > 0 && proposalTotalCols > 0) ? `
-    <th rowspan="2" style="vertical-align: middle;">コスト比較</th>
-    <th class="mc-current" colspan="${currentTotalCols}">現状</th>
-    <th class="mc-proposal-0" colspan="${proposalTotalCols}">ご提案</th>
-  </tr>
-  <tr>
-    ${rhCurrFeeGrps.map(g => `<th class="${colClass(g[0], allProposals)}" colspan="${g.length}" style="font-size:10px; font-weight:600; opacity:.9; text-align:center;">${esc(g[0].label || '現状')}</th>`).join('')}
-    ${rhPropFeeGrps.map(g => `<th class="${colClass(g[0], allProposals)}" colspan="${g.length}" style="font-size:10px; font-weight:600; opacity:.9; text-align:center;">${esc(g[0].label || '─')}</th>`).join('')}
-  ` : `
+  const rhHeaders = `
     <th>コスト比較</th>
     ${feeGroups.map(g => `<th class="${colClass(g[0], allProposals)}" colspan="${g.length}">${esc(g[0].label || (g[0].role === 'current' ? '現状' : '─'))}</th>`).join('')}
   `;
