@@ -440,24 +440,24 @@ function applyPrintCSS(mcCount, numSections) {
       padding: ${pad}px !important; box-sizing: border-box !important;
       overflow: hidden !important;
       display: flex !important; flex-direction: column !important;
-      align-items: stretch !important;
+      align-items: stretch !important; justify-content: center !important;
     }
     ${prefix}.doc-card {
       box-shadow: none !important; border-radius: 0 !important;
       margin: 0 !important; animation: none !important; background: #fff !important;
       width: 100% !important; box-sizing: border-box !important;
-      flex: 1 !important; display: flex !important; flex-direction: column !important;
-      align-items: stretch !important;
+      flex: 0 0 auto !important; max-height: 100% !important; display: flex !important; flex-direction: column !important;
+      align-items: stretch !important; overflow: hidden !important;
     }
     ${prefix}.doc-header { padding: 8px 14px !important; flex-shrink: 0 !important; box-sizing: border-box !important; }
     ${prefix}.doc-body {
       padding: 8px 14px 0 !important; box-sizing: border-box !important;
-      flex: 1 !important; min-height: 0 !important;
+      flex: 0 0 auto !important;
       display: flex !important; flex-direction: column !important;
     }
-    ${prefix}.compare-wrap { overflow: visible !important; flex: 1 !important; min-height: 0 !important; width: 100% !important; }
+    ${prefix}.compare-wrap { overflow: visible !important; flex: 0 0 auto !important; width: 100% !important; }
     ${prefix}.cost-col { flex-shrink: 0 !important; display: flex !important; flex-direction: column !important; }
-    ${prefix}table.compare { font-size: ${cellFont}px !important; line-height: 1.25 !important; height: 100% !important; }
+    ${prefix}table.compare { font-size: ${cellFont}px !important; line-height: 1.25 !important; }
     ${prefix}table.compare td, ${prefix}table.compare th { padding: 2px 5px !important; }
     ${prefix}table.compare thead th { font-size: ${labelFont}px !important; }
     ${prefix}table.compare td.td-label { font-size: ${labelFont}px !important; }
@@ -474,8 +474,8 @@ function applyPrintCSS(mcCount, numSections) {
     ${prefix}.doc-title { font-size: ${titleFont}px !important; }
     ${prefix}.print-logo { text-align: right !important; padding: 8px 0 0 !important; opacity: 0.85 !important; }
     ${prefix}.print-logo img { max-width: 110px !important; max-height: 48px !important; }
-    ${prefix}.section-block { flex: 1 !important; min-height: 0 !important; display: flex !important; flex-direction: column !important; }
-    ${prefix}.section-block .compare-wrap { flex: 1 !important; min-height: 0 !important; }
+    ${prefix}.section-block { flex: 0 0 auto !important; display: flex !important; flex-direction: column !important; }
+    ${prefix}.section-block .compare-wrap { flex: 0 0 auto !important; }
     ${prefix}.section-divider { height: 4px !important; flex-shrink: 0 !important; }`;
 
   el.textContent = `
