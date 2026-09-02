@@ -599,7 +599,7 @@ function defaultMachine(role, proposalIndex, group) {
     role,
     group: group || '',
     skip: false,
-    label: role === 'current' ? '現状' : ('提案機器' + (PROPOSAL_LABELS[proposalIndex] || (proposalIndex+1))),
+    label: role === 'current' ? '' : ('提案機器' + (PROPOSAL_LABELS[proposalIndex] || (proposalIndex+1))),
     dealer:'', installDate:'', toner:'含む',
     maker:'', model:'', count:1, paper:'A3',
     speed:'', speedC:'', speedM:'', size:'', weight:'',
@@ -757,7 +757,7 @@ function fullMachineFormHTML(m) {
         <label>拠点名（列ヘッダーとして印刷に表示）</label>
         <div style="display:flex;align-items:center;gap:4px;">
           <input type="text" style="flex:1;min-width:0;" value="${esc(m.label)}"
-                 placeholder="${m.role==='current'?'例: 現状':'例: 本社、大阪支店'}"
+                 placeholder="例: 本社、大阪支店"
                  data-preview="machine-label"
                  oninput="setMF('${mid}','label',this.value)">
           ${stBar(`_ns('${mid}','color',this.value)`,`_ns('${mid}','bold',${!ns.bold})`,`_ns('${mid}','size',this.value)`,ns)}
