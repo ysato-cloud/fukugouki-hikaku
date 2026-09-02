@@ -474,7 +474,8 @@ function importMaster(file) {
         image:  m.image  || '',
       }));
       saveMaster();
-      renderMaster();
+      renderFilterChips();
+      renderGrid();
       alert(`${master.length}件インポートしました。`);
     } catch (err) {
       alert('読み込みに失敗しました。正しいファイルか確認してください。');
