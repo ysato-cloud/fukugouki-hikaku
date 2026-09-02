@@ -434,7 +434,7 @@ function applyPrintCSS(mcCount, numSections) {
   const extraLeftPx = Math.round(extraLeftMm / 297 * A4_W);  /* プレビュー換算 px */
   const imgMaxW = n <= 2 ? 160 : n <= 3 ? 130 : 100;
   const imgMaxH = Math.round(imgMaxW * 0.72);
-  const rowPadY = n <= 1 ? 9 : n <= 2 ? 6 : n <= 3 ? 4 : 2;  /* 台数が少ないとき行の高さを広げて余白を埋める */
+  const rowPadY = n <= 1 ? 5 : n <= 2 ? 4 : n <= 3 ? 3 : 2;  /* 台数が少ないとき行の高さを広げて余白を埋める */
 
   const layoutRules = (prefix) => `
     ${prefix}.paper-wrap {
