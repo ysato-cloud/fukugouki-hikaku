@@ -478,7 +478,6 @@ table.pt input:focus{outline:none;border-color:var(--navy);}
       <div class="print-opts-group-title">機器情報</div>
       <label><input type="checkbox" id="po-showImage"       onchange="applyPrintOpt('showImage',this.checked)"> 機種画像</label>
       <label><input type="checkbox" id="po-showInstallDate" onchange="applyPrintOpt('showInstallDate',this.checked)"> 導入年月</label>
-      <label><input type="checkbox" id="po-showSite"        onchange="applyPrintOpt('showSite',this.checked)"> 拠点名</label>
     </div>
     <div class="print-opts-group">
       <div class="print-opts-group-title">仕様</div>
@@ -599,7 +598,6 @@ function defaultMachine(role, proposalIndex, group) {
     id: makeMachineId(),
     role,
     group: group || '',
-    site: '',
     skip: false,
     label: role === 'current' ? '現状' : ('提案機器' + (PROPOSAL_LABELS[proposalIndex] || (proposalIndex+1))),
     dealer:'', installDate:'', toner:'含む',
@@ -756,20 +754,14 @@ function fullMachineFormHTML(m) {
   return `
     <div style="margin-bottom:14px;max-width:520px;">
       <div class="field">
-        <label>列ヘッダー名（印刷時の表示）</label>
+        <label>拠点名（列ヘッダーとして印刷に表示）</label>
         <div style="display:flex;align-items:center;gap:4px;">
           <input type="text" style="flex:1;min-width:0;" value="${esc(m.label)}"
-                 placeholder="${m.role==='current'?'例: 現状':'例: 提案機器①'}"
+                 placeholder="${m.role==='current'?'例: 現状':'例: 本社、大阪支店'}"
                  data-preview="machine-label"
                  oninput="setMF('${mid}','label',this.value)">
           ${stBar(`_ns('${mid}','color',this.value)`,`_ns('${mid}','bold',${!ns.bold})`,`_ns('${mid}','size',this.value)`,ns)}
         </div>
-      </div>
-      <div class="field" style="margin-top:8px;">
-        <label>拠点名（任意・印刷時にヘッダー2段目に表示）</label>
-        <input type="text" value="${esc(m.site)}" placeholder="例: 本社、大阪支店"
-               data-mid="${mid}" data-field="site"
-               oninput="setMF('${mid}','site',this.value)">
       </div>
       <div style="margin-top:8px;border:1px solid #e0e6ee;border-radius:6px;padding:6px 10px;background:#fafbfc;">
         <div style="font-size:11px;font-weight:600;color:var(--sub);cursor:pointer;user-select:none;" onclick="this.parentElement.querySelector('.cs-body').classList.toggle('cs-open')">
@@ -1365,7 +1357,6 @@ function load() {
         if (m.mcMono  === undefined) m.mcMono  = '';
         if (m.mcColor === undefined) m.mcColor = '';
         if (m.group === undefined) m.group = '';
-        if (m.site  === undefined) m.site  = '';
       });
     }
   } catch(e) { /* ignore */ }
@@ -1406,7 +1397,6 @@ function importState(file) {
         if (m.mcMono  === undefined) m.mcMono  = '';
         if (m.mcColor === undefined) m.mcColor = '';
         if (m.group === undefined) m.group = '';
-        if (m.site  === undefined) m.site  = '';
       });
       autoSave();
       document.getElementById('clientName').value      = state.clientName      || '';
@@ -1450,7 +1440,7 @@ function clearAll() {
 
 const PRINT_OPTS_KEY = 'fukugoki_print_opts';
 const DEFAULT_PRINT_OPTS = {
-  showImage: true, showDealer: true, showInstallDate: true, showSite: false,
+  showImage: true, showDealer: true, showInstallDate: true,
   showSpeed: false, showPaper: false, showSize: false, showWeight: false, showFeatures: false,
   showCounter: true, showToner: true, showSimPages: true,
   showCounterFee: true, showLease: true, showTotal: true,
