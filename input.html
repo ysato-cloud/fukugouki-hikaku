@@ -324,6 +324,46 @@ table.pt input:focus{outline:none;border-color:var(--navy);}
 .style-row-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px dashed #eee;}
 .style-row-item:last-child{border-bottom:none;}
 .style-row-label{flex:1;font-size:12px;color:var(--text);}
+
+/* ── クイックセットアップ ── */
+.setup-body{display:none;}
+.setup-body.setup-open{display:block;}
+.setup-hint{font-size:12px;color:var(--sub);margin-bottom:14px;line-height:1.6;}
+.setup-group-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.setup-group-row input[type="text"]{flex:2;}
+.setup-group-row input[type="number"]{flex:1;}
+.setup-group-row .unit{font-size:11px;color:var(--sub);white-space:nowrap;}
+.btn-rm-row{background:none;border:1px solid #e0e0e0;border-radius:4px;padding:0 10px;height:36px;cursor:pointer;color:var(--red);font-size:12px;font-weight:bold;font-family:inherit;}
+.btn-rm-row:hover{background:#fee2e2;}
+
+/* ── 提案グループ見出し ── */
+.prop-group-hd{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:22px 0 10px;padding:8px 14px;border-radius:8px;
+  background:#eef2f6;border-left:5px solid var(--navy);
+}
+#machinesContainer .prop-group-hd:first-of-type{margin-top:22px;}
+.prop-group-hd.pg-green{border-left-color:var(--green);}
+.prop-group-hd.pg-teal{border-left-color:var(--teal);}
+.prop-group-hd.pg-purple{border-left-color:var(--purple);}
+.prop-group-hd.pg-amber{border-left-color:var(--amber);}
+.prop-group-hd.pg-gray{border-left-color:var(--gray);}
+.prop-group-hd.pg-blue{border-left-color:var(--navy);}
+.prop-group-name{
+  border:none;background:transparent;font-size:13px;font-weight:bold;
+  color:var(--text);padding:3px 6px;border-radius:4px;min-width:140px;font-family:inherit;
+}
+.prop-group-name:focus{outline:none;background:#fff;box-shadow:0 0 0 1.5px var(--navy);}
+.prop-group-count{font-size:11px;color:var(--sub);white-space:nowrap;}
+.prop-group-btn{
+  background:#fff;border:1.5px solid var(--border);border-radius:5px;
+  padding:5px 10px;font-size:11px;font-weight:bold;color:var(--navy);
+  cursor:pointer;font-family:inherit;white-space:nowrap;
+}
+.prop-group-btn:first-of-type{margin-left:auto;}
+.prop-group-btn:hover{background:#eaf2f8;}
+.prop-group-btn.danger{color:var(--red);}
+.prop-group-btn.danger:hover{background:#fee2e2;}
 </style>
 </head>
 <body>
@@ -366,10 +406,33 @@ table.pt input:focus{outline:none;border-color:var(--navy);}
     </div>
   </div>
 
+  <!-- クイックセットアップ：現状・提案の台数をまとめて指定して箱を一括作成 -->
+  <div class="card" id="setupCard">
+    <div class="card-hd blue">
+      <span style="background:rgba(255,255,255,.2);border-radius:4px;padding:2px 7px;font-size:11px;">クイック設定</span>
+      <span>構成をまとめて作成</span>
+      <label class="skip-toggle" style="margin-left:auto;">
+        <input type="checkbox" id="setupToggle" onchange="document.getElementById('setupBody').classList.toggle('setup-open',this.checked)">
+        開く
+      </label>
+    </div>
+    <div class="card-body setup-body" id="setupBody">
+      <p class="setup-hint">現状・提案の台数をまとめて指定して、入力欄を一括作成します。提案は「自社提案」「他社提案」のようにパターン名を付けてグループ分けできます（後から名前は変更できます）。作成すると現在の入力内容は上書きされます。</p>
+      <div class="field" style="max-width:200px;margin-bottom:16px;">
+        <label>現状機器 台数</label>
+        <input type="number" id="setupCurrentCount" min="0" value="1">
+      </div>
+      <div class="sub-label">提案パターン</div>
+      <div id="setupGroupRows"></div>
+      <button class="btn-add" onclick="addSetupGroupRow()">＋ パターンを追加</button>
+      <button class="btn btn-primary" style="margin-top:14px;" onclick="applySetup()">この構成で作成する</button>
+    </div>
+  </div>
+
   <!-- ② 機器カード（動的）※ 現状機器の後に「現状機器を追加」ボタンも renderMachines() で注入 -->
   <div id="machinesContainer"></div>
 
-  <!-- 提案機器追加 -->
+  <!-- 提案機器追加（グループなしで1台追加） -->
   <button class="btn-add-mc" onclick="addProposalMachine()">＋ 提案機器を追加</button>
 
   <!-- ③ 比較条件 -->
@@ -538,10 +601,11 @@ function makeMachineId() {
   return 'mc' + Date.now().toString(36) + Math.random().toString(36).substr(2,4);
 }
 
-function defaultMachine(role, proposalIndex) {
+function defaultMachine(role, proposalIndex, group) {
   return {
     id: makeMachineId(),
     role,
+    group: group || '',
     skip: false,
     label: role === 'current' ? '現状' : ('提案機器' + (PROPOSAL_LABELS[proposalIndex] || (proposalIndex+1))),
     dealer:'', installDate:'', toner:'含む',
@@ -576,10 +640,21 @@ let state = {
 /* ═══════════════════════════════════════════════
    機器カード描画
 ═══════════════════════════════════════════════ */
+function proposalColorKeys() {
+  const props = state.machines.filter(x => x.role === 'proposal');
+  const keys = [];
+  props.forEach(mc => {
+    const k = mc.group ? ('g:' + mc.group) : ('m:' + mc.id);
+    if (!keys.includes(k)) keys.push(k);
+  });
+  return keys;
+}
+
 function getMachineColor(m) {
   if (m.role === 'current') return 'blue';
-  const props = state.machines.filter(x => x.role === 'proposal');
-  const idx = props.indexOf(m);
+  const keys = proposalColorKeys();
+  const key = m.group ? ('g:' + m.group) : ('m:' + m.id);
+  const idx = keys.indexOf(key);
   return ['green','teal','purple','amber','gray','blue'][idx % 6];
 }
 
@@ -931,7 +1006,136 @@ function renderMachines() {
   document.getElementById('machinesContainer').innerHTML =
     currents.map(m => machineCardHTML(m)).join('') +
     addCurBtn +
-    proposals.map(m => machineCardHTML(m)).join('');
+    renderProposalBlocks(proposals);
+}
+
+function renderProposalBlocks(proposals) {
+  const out = [];
+  let i = 0;
+  while (i < proposals.length) {
+    const m = proposals[i];
+    if (m.group) {
+      let j = i;
+      while (j < proposals.length && proposals[j].group === m.group) j++;
+      const items = proposals.slice(i, j);
+      out.push(groupHeaderHTML(items) + items.map(mc => machineCardHTML(mc)).join(''));
+      i = j;
+    } else {
+      out.push(machineCardHTML(m));
+      i++;
+    }
+  }
+  return out.join('');
+}
+
+function groupHeaderHTML(items) {
+  const groupName = items[0].group;
+  const color = getMachineColor(items[0]);
+  const ids = items.map(m => m.id).join(',');
+  const lastId = items[items.length - 1].id;
+  return `
+  <div class="prop-group-hd pg-${color}">
+    <input type="text" class="prop-group-name" value="${esc(groupName)}"
+           placeholder="提案パターン名"
+           oninput="renameGroupByIds('${ids}',this.value)"
+           onblur="renderMachines();autoSave()">
+    <span class="prop-group-count">${items.length}台</span>
+    <button class="prop-group-btn" onclick="addToGroup('${lastId}')">＋ この構成に機器を追加</button>
+    <button class="prop-group-btn danger" onclick="deleteGroup('${items[0].id}')">グループを削除</button>
+  </div>`;
+}
+
+function renameGroupByIds(idsCsv, newName) {
+  idsCsv.split(',').forEach(id => {
+    const m = state.machines.find(x => x.id === id);
+    if (m) m.group = newName;
+  });
+  autoSave();
+}
+
+function addToGroup(lastId) {
+  const idx = state.machines.findIndex(x => x.id === lastId);
+  if (idx < 0) return;
+  const groupName = state.machines[idx].group;
+  const countInGroup = state.machines.filter(x => x.role === 'proposal' && x.group === groupName).length;
+  const nm = defaultMachine('proposal', 0, groupName);
+  nm.label = groupName + (PROPOSAL_LABELS[countInGroup] || String(countInGroup + 1));
+  state.machines.splice(idx + 1, 0, nm);
+  renderMachines();
+  autoSave();
+}
+
+function deleteGroup(anyIdInGroup) {
+  const ref = state.machines.find(x => x.id === anyIdInGroup);
+  if (!ref) return;
+  const groupName = ref.group;
+  const inGroup = state.machines.filter(x => x.role === 'proposal' && x.group === groupName);
+  const totalProposals = state.machines.filter(x => x.role === 'proposal').length;
+  if (totalProposals - inGroup.length < 1) {
+    alert('提案機器は最低1台必要です。'); return;
+  }
+  if (!confirm(`「${groupName || '(名称未設定)'}」の${inGroup.length}台をまとめて削除しますか？`)) return;
+  state.machines = state.machines.filter(x => !(x.role === 'proposal' && x.group === groupName));
+  renderMachines();
+  autoSave();
+}
+
+/* ═══════════════════════════════════════════════
+   クイックセットアップ
+═══════════════════════════════════════════════ */
+let setupGroups = [{ name: '自社提案', count: 1 }];
+
+function renderSetupGroupRows() {
+  document.getElementById('setupGroupRows').innerHTML = setupGroups.map((g, i) => `
+    <div class="setup-group-row">
+      <input type="text" placeholder="例: 自社提案A" value="${esc(g.name)}"
+             oninput="setupGroups[${i}].name=this.value">
+      <input type="number" min="0" value="${g.count}"
+             oninput="setupGroups[${i}].count=(+this.value)||0">
+      <span class="unit">台</span>
+      ${setupGroups.length > 1 ? `<button class="btn-rm-row" onclick="removeSetupGroupRow(${i})">✕</button>` : ''}
+    </div>`).join('');
+}
+
+function addSetupGroupRow() {
+  setupGroups.push({ name: '', count: 1 });
+  renderSetupGroupRows();
+}
+
+function removeSetupGroupRow(i) {
+  setupGroups.splice(i, 1);
+  renderSetupGroupRows();
+}
+
+function applySetup() {
+  const curCount = Math.max(0, parseInt(document.getElementById('setupCurrentCount').value) || 0);
+  const groups = setupGroups.filter(g => g.count > 0);
+  const totalProposals = groups.reduce((s, g) => s + g.count, 0);
+  if (totalProposals < 1) {
+    alert('提案機器は最低1台必要です。パターンの台数を確認してください。'); return;
+  }
+  const summary = groups.map(g => `${g.name.trim() || '(名称未設定)'} ${g.count}台`).join('、');
+  if (!confirm(`現状 ${curCount}台 / 提案 ${summary} の構成で作成します。\n現在の入力内容は上書きされます。よろしいですか？`)) return;
+
+  const newMachines = [];
+  for (let i = 0; i < curCount; i++) {
+    const m = defaultMachine('current', i);
+    if (curCount > 1) m.label = '現状' + (PROPOSAL_LABELS[i] || (i + 1));
+    newMachines.push(m);
+  }
+  groups.forEach(g => {
+    const gname = g.name.trim();
+    for (let j = 0; j < g.count; j++) {
+      const m = defaultMachine('proposal', j, gname);
+      m.label = gname ? (gname + (PROPOSAL_LABELS[j] || (j + 1))) : ('提案機器' + (PROPOSAL_LABELS[j] || (j + 1)));
+      newMachines.push(m);
+    }
+  });
+  state.machines = newMachines;
+  renderMachines();
+  autoSave();
+  document.getElementById('setupBody').classList.remove('setup-open');
+  document.getElementById('setupToggle').checked = false;
 }
 
 /* ═══════════════════════════════════════════════
@@ -986,9 +1190,6 @@ function deleteMachine(id) {
   }
   if (!confirm('この機器を削除しますか？')) return;
   state.machines = state.machines.filter(x => x.id !== id);
-  state.machines.filter(x => x.role === 'proposal').forEach((mc, i) => {
-    mc.label = '提案機器' + (PROPOSAL_LABELS[i] || (i+1));
-  });
   const currs = state.machines.filter(x => x.role === 'current');
   currs.forEach((mc, i) => { mc.label = currs.length > 1 ? '現状' + (PROPOSAL_LABELS[i] || (i+1)) : '現状'; });
   renderMachines();
@@ -1145,6 +1346,7 @@ function load() {
         if (!m.cellStyles) m.cellStyles = {};
         if (m.mcMono  === undefined) m.mcMono  = '';
         if (m.mcColor === undefined) m.mcColor = '';
+        if (m.group === undefined) m.group = '';
       });
     }
   } catch(e) { /* ignore */ }
@@ -1183,6 +1385,7 @@ function importState(file) {
         if (!m.cellStyles) m.cellStyles = {};
         if (m.mcMono  === undefined) m.mcMono  = '';
         if (m.mcColor === undefined) m.mcColor = '';
+        if (m.group === undefined) m.group = '';
       });
       autoSave();
       document.getElementById('clientName').value      = state.clientName      || '';
@@ -1278,6 +1481,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('docDate').addEventListener('input', e => { state.docDate = e.target.value; autoSave(); });
   document.getElementById('docNotes').addEventListener('input', e => { state.docNotes = e.target.value; autoSave(); });
   renderMachines();
+  renderSetupGroupRows();
 
   /* 印刷設定バーのチェックボックスを保存値で初期化 */
   const initOpts = { ...DEFAULT_PRINT_OPTS, ...JSON.parse(localStorage.getItem(PRINT_OPTS_KEY) || '{}') };

@@ -515,7 +515,13 @@ const PROP_CLASSES = ['mc-proposal-0','mc-proposal-1','mc-proposal-2','mc-propos
 
 function colClass(m, proposals) {
   if (m.role === 'current') return 'mc-current';
-  const pi = proposals.indexOf(m);
+  const keys = [];
+  proposals.forEach(mc => {
+    const k = mc.group ? ('g:' + mc.group) : ('m:' + mc.id);
+    if (!keys.includes(k)) keys.push(k);
+  });
+  const key = m.group ? ('g:' + m.group) : ('m:' + m.id);
+  const pi = keys.indexOf(key);
   return PROP_CLASSES[pi % PROP_CLASSES.length];
 }
 
@@ -740,12 +746,38 @@ function render(injectedState) {
         <th class="h-mc h-group mc-current" colspan="${numCurrCols}">現状</th>
         <th class="h-mc h-group mc-proposal-0" colspan="${numPropCols}">ご提案</th>
       </tr>` : '';
+
+    const hasPatternGroups = smcs.some(m => m.role === 'proposal' && m.group);
+    function patternGroupCells() {
+      const cells = [];
+      let i = 0;
+      while (i < smcs.length) {
+        const m = smcs[i];
+        if (m.role === 'proposal' && m.group) {
+          let j = i;
+          while (j < smcs.length && smcs[j].role === 'proposal' && smcs[j].group === m.group) j++;
+          cells.push(`<th class="h-mc h-group ${colClass(m, secProposals)}"${j-i>1?` colspan="${j-i}"`:''}>${esc(m.group)}</th>`);
+          i = j;
+        } else {
+          cells.push(`<th class="h-mc h-group ${m.role==='current'?'mc-current':colClass(m, secProposals)}"></th>`);
+          i++;
+        }
+      }
+      return cells.join('');
+    }
+    const patternGroupRow = hasPatternGroups ? `
+      <tr data-section="machine-label">
+        <th class="h-label"></th>
+        ${patternGroupCells()}
+      </tr>` : '';
+
     const compareTable = `
     <div class="compare-wrap">
       <table class="compare">
         ${colGroup}
         <thead>
           ${groupHeaderRow}
+          ${patternGroupRow}
           <tr data-section="machine-label">
             <th class="h-label"></th>
             ${smcs.map(m => thMC(m)).join('')}
