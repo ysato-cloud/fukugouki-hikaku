@@ -430,10 +430,11 @@ function applyPrintCSS(mcCount, numSections) {
   const titleFont = 15;                                                   /* 表題（大きめ固定） */
   const pad    = n <= 1 ? 32 : n <= 2 ? 24 : n <= 3 ? 16 : 8;  /* プレビュー用 px */
   const padMm  = n <= 1 ? 8  : n <= 2 ? 6  : n <= 3 ? 4  : 2;  /* 印刷用 mm */
-  const extraLeftMm = 12;                 /* 左とじ・ファイリング用の追加余白 mm */
+  const extraLeftMm = 6;                  /* 左とじ・ファイリング用の追加余白 mm */
   const extraLeftPx = Math.round(extraLeftMm / 297 * A4_W);  /* プレビュー換算 px */
   const imgMaxW = n <= 2 ? 160 : n <= 3 ? 130 : 100;
   const imgMaxH = Math.round(imgMaxW * 0.72);
+  const rowPadY = n <= 1 ? 9 : n <= 2 ? 6 : n <= 3 ? 4 : 2;  /* 台数が少ないとき行の高さを広げて余白を埋める */
 
   const layoutRules = (prefix) => `
     ${prefix}.paper-wrap {
@@ -460,12 +461,12 @@ function applyPrintCSS(mcCount, numSections) {
     ${prefix}.compare-wrap { overflow: visible !important; flex: 0 0 auto !important; width: 100% !important; }
     ${prefix}.cost-col { flex-shrink: 0 !important; display: flex !important; flex-direction: column !important; }
     ${prefix}table.compare { font-size: ${cellFont}px !important; line-height: 1.25 !important; }
-    ${prefix}table.compare td, ${prefix}table.compare th { padding: 2px 5px !important; }
+    ${prefix}table.compare td, ${prefix}table.compare th { padding: ${rowPadY}px 5px !important; }
     ${prefix}table.compare thead th { font-size: ${labelFont}px !important; }
     ${prefix}table.compare td.td-label { font-size: ${labelFont}px !important; }
     ${prefix}table.compare td.td-label.indent { font-size: ${cellFont}px !important; }
     ${prefix}table.cost-reduction { font-size: ${cellFont}px !important; line-height: 1.25 !important; }
-    ${prefix}table.cost-reduction td, ${prefix}table.cost-reduction th { padding: 2px 5px !important; }
+    ${prefix}table.cost-reduction td, ${prefix}table.cost-reduction th { padding: ${rowPadY}px 5px !important; }
     ${prefix}.mc-img-cell img { max-width: ${imgMaxW}px !important; max-height: ${imgMaxH}px !important; }
     ${prefix}.mc-img-placeholder { width: ${imgMaxW}px !important; height: ${imgMaxH}px !important; }
     ${prefix}.mc-img-model { font-size: ${smallFont}px !important; }
